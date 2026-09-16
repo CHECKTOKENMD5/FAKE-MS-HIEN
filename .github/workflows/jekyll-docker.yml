@@ -1,0 +1,43 @@
+name: Test App
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check HTML file exists
+        run: |
+          if [ ! -f index.html ]; then
+            echo "❌ index.html not found!"
+            exit 1
+          fi
+          echo "✅ index.html found"
+      
+      - name: Check file size
+        run: |
+          SIZE=$(stat -c%s index.html)
+          echo "File size: $SIZE bytes"
+          if [ $SIZE -lt 100000 ]; then
+            echo "⚠️ File too small, may be incomplete"
+          fi
+      
+      - name: Validate HTML (basic)
+        run: |
+          # Kiểm tra có DOCTYPE
+          if ! grep -q "<!DOCTYPE html>" index.html; then
+            echo "❌ Missing DOCTYPE"
+            exit 1
+          fi
+          # Kiểm tra có closing tags
+          if ! grep -q "</html>" index.html; then
+            echo "❌ Missing </html>"
+            exit 1
+          fi
+          echo "✅ HTML structure valid"
